@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Play Video</title>
+    <link rel="stylesheet" href="HOME.CSS" />
+  </head>
+
+  <body>
+    <nav class="flex-div">
+      <script src="./common/header.js"></script>
+    </nav>
+
+    <div class="container play-container">
+      <div class="row">
+        <div class="play-video">
+          <div id="videoContainer"></div>
+          <div class="videoInfo"></div>
+        </div>
+        <div class="comments">
+          <div class="add-comment">
+            <img src="images/Jack.png" />
+            <input type="text" placeholder="write Comments" />
+          </div>
+        </div>
+        <div class="right-sidebar"></div>
+      </div>
+    </div>
+
+    <!-- Share Popup -->
+    <div class="popup-container" id="sharePopupContainer">
+      <div class="popup">
+        <span class="popup-close" id="sharePopupClose">&times;</span>
+        <h2>Share</h2>
+        <div class="popup-options">
+          <!-- Add your share options here -->
+          <!-- Embed, WhatsApp, Email, Facebook, Twitter... -->
+        </div>
+        <div class="video-path">
+          <p>Video Path:</p>
+          <input
+            type="text"
+            value="https://www.youtube.com/watch?v=${videoId}"
+            readonly
+          />
+          <button class="copy-button">Copy</button>
+        </div>
+      </div>
+    </div>
+    <script>
+      const urlString = window.location.href;
+      const videoId = urlString.split("=")[1];
+      const videoElement = `<iframe width="560" height="315" src="https://www.youtube.com/embed/${videoId}" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>`;
+      document.getElementById("videoContainer").innerHTML = videoElement;
+
+      // single video details
+
+      const API_KEY = "AIzaSyBiGV1dmxIysPICkz4k9rj-aElMwtu5dmU";
+      const videoUrl = `https://youtube.googleapis.com/youtube/v3/videos?part=snippet%2CcontentDetails%2Cstatistics&id=${videoId}&key=${API_KEY}`;
+
+      const getVideoList = async () => {
+        const fetchData = await fetch(videoUrl);
+        const videoData = await fetchData.json();
+
+        displayvideoList(videoData.items);
+      };
+
+      const displayvideoList = (items) => {
+        console.log(items, "items");
+        items.forEach(({ id, snippet, statistics }) => {
+          const videoHashtags = snippet.tags;
+          const hashtagsHTML = videoHashtags
+            .map((tag) => `<a href="#">#${tag}</a>`)
+            .join("");
+
+          const element = `<div class="tags">
+                            ${hashtagsHTML}
+                        
+                    </div>
+                    
+                    <h3>${snippet.title}</h3>
+                    <div class="play-video-info">
+                        <p>${statistics.viewCount} views &bull; 1 days ago</p>
+                        <div>
+                            <a><img src="images/like.png" id="likeButton${id}" class="like-button"><span id="likeCount${id}">${statistics.likeCount}</span></a>
+                            <a href=""><img src="images/dislike.png">2</a>
+                            <a href=""><img src="images/share.png" id="shareImage">Share</a>
+                            <a href=""><img src="images/save.png">Save</a>
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="publisher">
+                        <img src=${snippet.thumbnails.default.url}>
+                        <div>
+                            <p>${snippet.channelTitle}</p>
+                            <span>7M Subscribers</span>
+                        </div>
+                        <button type="button">
+                            Subscribe
+                        </button>
+                    </div>
+    
+                    <div class="vid-description">
+                        <p>${snippet.description}</p>
+                        <hr>
+                        <h4>${statistics.commentCount} Comments</h4>
+                    </div>`;
+
+          document.getElementsByClassName("videoInfo")[0].innerHTML += element;
+          const likeButton = document.getElementById(`likeButton${id}`);
+          likeButton.addEventListener("click", () => toggleLike(id));
+        });
+      };
+      getVideoList();
+      // share popup
+      const openSharePopup = () => {
+        console.log("Trying to open share popup...");
+        if (sharePopupContainer) {
+          console.log("Share popup container found.");
+          sharePopupContainer.style.display = "flex";
+        } else {
+          console.log("Share popup container not found.");
+        }
+      };
+
+      const shareImage = document.querySelector("#shareImage");
+      const sharePopupContainer = document.querySelector(
+        "#sharePopupContainer"
+      );
+      const sharePopupClose = document.querySelector("#sharePopupClose");
+
+      shareImage.addEventListener("click", openSharePopup);
+
+      sharePopupClose.addEventListener("click", () => {
+        console.log("Popup close clicked");
+        sharePopupContainer.style.display = "none";
+      });
+
+      // Copy video path when the copy button is clicked
+      const copyButton = document.querySelector(".copy-button");
+      const videoPathInput = document.querySelector(".video-path input");
+
+      copyButton.addEventListener("click", () => {
+        videoPathInput.select();
+        document.execCommand("copy");
+      });
+
+      // to like the video increase using count
+      const toggleLike = (videoId) => {
+        const likeButton = document.getElementById(`likeButton${videoId}`);
+        const likeCountElement = document.getElementById(`likeCount${videoId}`);
+
+        let isLiked = likeButton.classList.contains("liked");
+        let likeCount = parseInt(likeCountElement.textContent);
+
+        if (isLiked) {
+          likeCount--;
+        } else {
+          likeCount++;
+        }
+
+        likeButton.classList.toggle("liked");
+        likeCountElement.textContent = likeCount;
+      };
+
+      // for comments we are using commentthreads api
+
+      const commentListApi = `https://youtube.googleapis.com/youtube/v3/commentThreads?part=snippet%2Creplies&videoId=${videoId}&key=${API_KEY}
+
+`;
+      const getcommentsList = async () => {
+        const fetchData = await fetch(commentListApi);
+        const commentsData = await fetchData.json();
+        console.log(commentsData);
+        displayComments(commentsData.items);
+      };
+
+      const displayComments = (comments) => {
+        comments.forEach((comment) => {
+          const commentsElement = `
+        <div class="old-comment">
+          <img src="${comment.snippet.topLevelComment.snippet.authorProfileImageUrl}" alt="${comment.snippet.topLevelComment.snippet.authorDisplayName}" />
+        </div>
+        <div class="comment-content">
+          <h3>${comment.snippet.topLevelComment.snippet.authorDisplayName} <span>${comment.snippet.topLevelComment.snippet.publishedAt}</span></h3>
+          <p>${comment.snippet.topLevelComment.snippet.textOriginal}</p>
+          <div class="comment-action">
+            <img src="images/like.png">
+            <span>${comment.snippet.topLevelComment.snippet.likeCount}</span>
+            <img src="images/dislike.png">
+            <span>${comment.snippet.topLevelComment.snippet.dislikeCount}</span>
+            <span>Reply</span>
+            <a href="">All Replies</a>
+          </div>
+        </div>
+      `;
+          document.getElementsByClassName("comments")[0].innerHTML +=
+            commentsElement;
+        });
+      };
+      getcommentsList();
+
+      // for suggestion videos we use most popular videos api
+
+      const videoListApi =
+        `https://youtube.googleapis.com/youtube/v3/videos?part=snippet%2CcontentDetails%2Cstatistics&chart=mostPopular&maxResults=50&regionCode=IN&key=` +
+        API_KEY;
+      const getVideoList1 = async () => {
+        const fetchData = await fetch(videoListApi);
+        const videoData = await fetchData.json();
+        console.log(videoData);
+        suggestion(videoData.items);
+      };
+      const suggestion = (items) => {
+        items.forEach((obj) => {
+          const element = `<div class="side-video-list">
+        <a href="play-video.html?v=${obj.id}"><img src="${obj.snippet.thumbnails.medium.url}" class="thumbnail" /></a>
+
+                    <div class="vid-info">
+                        <a href="">${obj.snippet.title}</a>
+                        <p>${obj.snippet.channelTitle}</p>
+                        <p>${obj.statistics.viewCount}views in 1 days</p>
+                    </div>
+                </div>`;
+          document.getElementsByClassName("right-sidebar")[0].innerHTML +=
+            element;
+        });
+      };
+      getVideoList1();
+    </script>
+  </body>
+</html>

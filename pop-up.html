@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="popup.css" />
+    <title>Share Popup</title>
+  </head>
+  <body>
+    <div class="popup-container">
+      <div class="popup">
+        <span class="popup-close">&times;</span>
+        <h2>Share</h2>
+        <div class="popup-options">
+          <a href="#">Embed</a>
+          <a href="#">WhatsApp</a>
+          <a href="#">Email</a>
+          <a href="#">Facebook</a>
+          <a href="#">Twitter</a>
+          <!-- Add more share options here -->
+        </div>
+        <div class="video-path">
+          <p>Video Path:</p>
+          <input
+            type="text"
+            value="https://www.youtube.com/watch?v=YOUR_VIDEO_ID"
+            readonly
+          />
+          <button class="copy-button">Copy</button>
+        </div>
+      </div>
+    </div>
+    <script src="popup.js"></script>
+  </body>
+</html>

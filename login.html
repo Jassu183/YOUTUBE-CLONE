@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Login</title>
+    <link rel="stylesheet" href="login.css" />
+  </head>
+  <body>
+    <div class="login-container">
+      <h2>Login</h2>
+
+      <div class="input-group">
+        <label for="username">Email</label>
+        <input type="email" placeholder="Email" required id="email" />
+      </div>
+      <div class="input-group">
+        <label for="password">Password</label>
+        <input type="password" placeholder="Password" required id="password" />
+      </div>
+      <button onclick="validateForm()" class="login-button">Login</button>
+    </div>
+
+    <script>
+      const validateForm = () => {
+        const profileObj = { email: "", password: "" };
+        if (email !== "" && password !== "") {
+          profileObj.email = document.getElementById("email").value;
+          profileObj.password = document.getElementById("password").value;
+          localStorage.setItem("profileDetails", JSON.stringify(profileObj));
+          window.location.href = "Home.html";
+        } else {
+          return;
+        }
+      };
+    </script>
+  </body>
+</html>
